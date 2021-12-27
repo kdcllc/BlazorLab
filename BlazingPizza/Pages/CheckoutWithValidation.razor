@@ -1,0 +1,87 @@
+﻿@page "/checkout-val"
+@implements IDisposable
+@inject OrderState OrderState
+@inject HttpClient HttpClient
+@inject NavigationManager NavigationManager
+
+<div class="main">
+    <EditForm EditContext="editContext" OnValidSubmit="PlaceOrder">
+        <div class="checkout-cols">
+            <div class="checkout-order-details">
+                <OrderReview Order="@Order"></OrderReview>
+            </div>
+            <div class="checkout-delivery-address">
+                @if (isError)
+                {
+                    <div class="alert alert-danger">Please enter a name and address.</div>
+                }
+                <AddressEditorWithValidation Address="Order.DeliveryAddress" />
+            </div>
+        </div>
+
+        <button class="checkout-button btn btn-warning" disabled=@isError>
+            Place order
+        </button>
+    </EditForm>
+</div>
+
+@code {
+    // https://docs.microsoft.com/en-us/aspnet/core/blazor/forms-validation?view=aspnetcore-6.0#basic-validation
+    Order Order => OrderState.Order;
+    bool isSubmitting;
+    bool isError = false;
+
+    EditContext? editContext;
+    ValidationMessageStore? messageStore;
+
+    protected override void OnInitialized()
+    {
+        editContext = new(Order.DeliveryAddress);
+        editContext.OnValidationRequested += HandleValidationRequested;
+        editContext.OnFieldChanged += HandleFieldChanged;
+        messageStore = new(editContext);
+    }
+    async Task PlaceOrder()
+    {
+        isError = !editContext.Validate();
+        if (!isError)
+        {
+            var response = await HttpClient.PostAsJsonAsync(NavigationManager.BaseUri + "orders", Order);
+            var orderId = await response.Content.ReadFromJsonAsync<int>();
+            OrderState.ResetOrder();
+            NavigationManager.NavigateTo($"/myorders/{orderId}");
+        }
+    }
+
+    private void HandleValidationRequested(object sender, ValidationRequestedEventArgs args)
+    {
+        // Custom validation logic
+        if (Order.DeliveryAddress.Name is null || Order.DeliveryAddress.Line1 is null || Order.DeliveryAddress.PostalCode is
+        null)
+        {
+            messageStore?.Add(() => Order.DeliveryAddress.Name, "Name can't be empty.");
+            messageStore?.Add(() => Order.DeliveryAddress.Line1, "Line1 can't be empty.");
+            messageStore?.Add(() => Order.DeliveryAddress.PostalCode, "Name can't be empty.");
+        }
+        else
+        {
+            messageStore?.Clear();
+        }
+
+    }
+
+    void HandleFieldChanged(object sender, FieldChangedEventArgs e)
+    {
+        isError = !editContext.Validate();
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        if (editContext is not null)
+        {
+            editContext.OnValidationRequested -= HandleValidationRequested;
+            editContext.OnFieldChanged -= HandleFieldChanged;
+        }
+    }
+}

@@ -1,0 +1,44 @@
+@inherits LayoutComponentBase
+
+<div id="app">
+
+  <header class="top-bar">
+    <a class="logo" href="">
+      <img src="img/logo.svg" />
+    </a>
+
+    <NavLink href="" class="nav-tab" Match="NavLinkMatch.All">
+      <img src="img/pizza-slice.svg" />
+      <div>Get Pizza</div>
+    </NavLink>
+
+    <NavLink href="myorders" class="nav-tab">
+      <img src="img/bike.svg" />
+      <div>My Orders</div>
+    </NavLink>
+  </header>
+
+  <div class="content">
+    <ErrorBoundary @ref="errorBoundary">
+        <ChildContent>
+            @Body
+        </ChildContent>
+        <ErrorContent>
+            <p class="my-custom-class">Whoa, sorry about that! While we fix this problem!</p>
+        </ErrorContent>
+    </ErrorBoundary>  </div>
+
+  <footer>
+    &copy; Blazing Pizza @DateTime.UtcNow.Year
+  </footer>
+
+</div>
+
+@code {
+    private ErrorBoundary errorBoundary;
+
+    protected override void OnParametersSet()
+    {
+        errorBoundary?.Recover();
+    }
+}
