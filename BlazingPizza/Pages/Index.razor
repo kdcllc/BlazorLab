@@ -4,6 +4,7 @@
 @inject HttpClient HttpClient
 @inject NavigationManager NavigationManager
 @inject OrderState OrderState
+@inject IJSRuntime JsRuntime
 
 <div class="main">
     <h1>Blazing Pizzas</h1>
@@ -45,7 +46,7 @@
                     <div class="title">
                         "@(pizza.Size)" @pizza.Special.Name
                     </div>
-                    <a @onclick="@( () => OrderState.RemovePizza(pizza))" class="delete-item">x</a>
+                    <a @onclick="@( () => ShowDeleteConfirm(pizza))" class="delete-item">x</a>
                 </div>
                 <div class="item-price">
                     @pizza.GetFormattedTotalPrice()
@@ -72,5 +73,12 @@
     protected override async Task OnInitializedAsync()
     {
         specials = await HttpClient.GetFromJsonAsync<List<PizzaSpecial>>(NavigationManager.BaseUri + "specials");
+    }
+
+    private async Task ShowDeleteConfirm(Pizza removePizza)
+    {
+        if (await JsRuntime.InvokeAsync<bool>("confirm",$"Do you want to remove the {removePizza.Special.Name} from your order?")) {
+            OrderState.RemovePizza(removePizza);
+        }
     }
 }
