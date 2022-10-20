@@ -14,7 +14,7 @@ namespace BlazingPizza
             {
                 Special = special,
                 SpecialId = special.Id,
-                Size = Pizza.DefaultSize,
+                Size = Pizza?.DefaultSize ?? 12,
                 Toppings = new()
             };
 

@@ -9,3 +9,21 @@ Welcome to your new app.
 <SurveyPrompt Title="How is Blazor working for you?" />
 
 <Counter IncrementAmount=10></Counter>
+
+<button class="btn btn-success ml-auto" @onclick="() => ShowModal(true)">Show Modal</button>
+
+<Modal 
+    Title="My first Modal dialog" 
+    Show="IsModal"
+    OnCancel="() => ShowModal(false)"
+    OnConfirm="() => ShowModal(false)">
+ <p>
+   This is my first modal dialog
+ </p>
+</Modal>
+
+@code {
+
+    bool IsModal;   
+    void ShowModal(bool flag) => IsModal = flag;
+}

@@ -1,0 +1,37 @@
+﻿<CascadingValue Value="this">
+    <div class="row align-items-start">
+        <div class="btn-group-vertical">
+            @foreach (TabPage tabPage in Items)
+            {
+                <button type="button" class="btn @GetButtonClass(tabPage) text-left" style="margin-bottom: 10px;" @onclick=@(() => ActivateItem(tabPage) )>    
+                    @tabPage.Title
+                </button>
+             }
+        </div>
+        <div class="card-body" style="background-color:#EBEBEB;">
+            @ChildContent
+        </div>
+    </div>
+</CascadingValue>
+
+@code {
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+    
+    public TabPage CurrentItem { get; set; }
+    private List<TabPage> Items = new List<TabPage>();
+
+    internal void AddItem(TabPage tabPage)
+    {
+        Items.Add(tabPage);
+        if (Items.Count == 1)
+        {
+            CurrentItem = tabPage;
+        }
+        StateHasChanged();
+    }
+
+    string GetButtonClass(TabPage tabPage) => tabPage == CurrentItem ? "btn-primary" : "btn-secondary";
+
+    void ActivateItem(TabPage tabPage) => CurrentItem = tabPage;
+}
